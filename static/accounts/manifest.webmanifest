@@ -1,0 +1,10 @@
+{
+  "name": "Lux",
+  "short_name": "Lux",
+  "description": "Productos, servicios y oportunidades de personas reales.",
+  "lang": "es-MX",
+  "display": "standalone",
+  "background_color": "#030405",
+  "theme_color": "#050609",
+  "icons": [{ "src": "/static/accounts/images/lux-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

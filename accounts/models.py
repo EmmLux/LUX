@@ -46,6 +46,13 @@ class Publication(models.Model):
 
     description = models.TextField()
 
+    image = models.ImageField(
+        upload_to="publicaciones/%Y/%m/",
+        blank=True,
+        null=True,
+        verbose_name="Foto",
+    )
+
     category = models.CharField(
         max_length=20,
         choices=CATEGORY_CHOICES

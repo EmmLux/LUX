@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
@@ -62,3 +63,33 @@ class LuxFlowTests(TestCase):
         self.client.force_login(outsider)
         response = self.client.get(reverse("detalle_conversacion", args=[other.pk]))
         self.assertRedirects(response, reverse("conversaciones"))
+
+    def test_authenticated_user_can_create_publication_with_photo(self):
+        self.client.force_login(self.owner)
+        photo = SimpleUploadedFile(
+            "producto.gif",
+            (
+                b"GIF87a\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff"
+                b"!\xf9\x04\x01\x00\x00\x00\x00,\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+            ),
+            content_type="image/gif",
+        )
+
+        response = self.client.post(
+            reverse("crear_publicacion"),
+            {
+                "title": "Mesa de madera",
+                "description": "Mesa restaurada en muy buen estado.",
+                "image": photo,
+                "category": "producto",
+                "price": "950.00",
+            },
+        )
+
+        publication = Publication.objects.get(title="Mesa de madera")
+        self.assertRedirects(
+            response,
+            reverse("detalle_publicacion", args=[publication.pk]),
+            fetch_redirect_response=False,
+        )
+        self.assertTrue(publication.image.name)

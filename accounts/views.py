@@ -104,7 +104,7 @@ def perfil_publico(request, username):
 @login_required
 def crear_publicacion(request):
     if request.method == "POST":
-        form = PublicationForm(request.POST)
+        form = PublicationForm(request.POST, request.FILES)
 
         if form.is_valid():
             publicacion = form.save(commit=False)
@@ -148,7 +148,7 @@ def publicaciones(request):
 @login_required
 def editar_publicacion(request, pk):
     publicacion = get_object_or_404(Publication, pk=pk, user=request.user)
-    form = PublicationForm(request.POST or None, instance=publicacion)
+    form = PublicationForm(request.POST or None, request.FILES or None, instance=publicacion)
     if request.method == "POST" and form.is_valid():
         form.save()
         messages.success(request, "La publicación se actualizó.")

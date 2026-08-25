@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lux</string>
+    <string name="title_activity_main">Lux</string>
+    <string name="package_name">com.emmlux.app</string>
+    <string name="custom_url_scheme">com.emmlux.app</string>
+</resources>

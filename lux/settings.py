@@ -22,28 +22,25 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
-# In Render, these values are supplied as environment variables rather than
-# committed to the repository. Local development continues to use the safe
-# defaults below.
-ON_RENDER = os.environ.get("RENDER") == "true"
+# Los valores de producción se reciben desde el proveedor elegido. No hay
+# dependencia de Render: la misma configuración funciona en cualquier host.
+IS_PRODUCTION = os.environ.get("DJANGO_ENV") == "production"
 SECRET_KEY = os.environ.get(
     "SECRET_KEY", "django-insecure-local-development-key-change-in-production"
 )
-DEBUG = os.environ.get("DEBUG", "False" if ON_RENDER else "True").lower() == "true"
+DEBUG = os.environ.get("DEBUG", "False" if IS_PRODUCTION else "True").lower() == "true"
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-render_hostname = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
-if render_hostname:
-    ALLOWED_HOSTS.append(render_hostname)
+if not DEBUG and SECRET_KEY.startswith("django-insecure-"):
+    raise RuntimeError("SECRET_KEY debe configurarse fuera del entorno de desarrollo.")
+
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver"]
 ALLOWED_HOSTS.extend(
     host.strip() for host in os.environ.get("ALLOWED_HOSTS", "").split(",") if host.strip()
 )
 
 CSRF_TRUSTED_ORIGINS = [
-    f"https://{render_hostname}" if render_hostname else "",
     *(origin.strip() for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if origin.strip()),
 ]
-CSRF_TRUSTED_ORIGINS = [origin for origin in CSRF_TRUSTED_ORIGINS if origin]
 
 
 # Application definition
@@ -146,7 +143,16 @@ USE_TZ = True
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
 STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "OPTIONS": {
+            "location": MEDIA_ROOT,
+            "base_url": MEDIA_URL,
+        },
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
@@ -166,9 +172,16 @@ LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'inicio'
 LOGOUT_REDIRECT_URL = 'inicio'
 
-if ON_RENDER:
+if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = False  # Django necesita que los formularios puedan enviar el token CSRF.
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"

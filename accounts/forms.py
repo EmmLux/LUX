@@ -43,6 +43,7 @@ class PublicationForm(forms.ModelForm):
         fields = [
             "title",
             "description",
+            "image",
             "category",
             "price",
         ]
@@ -58,6 +59,13 @@ class PublicationForm(forms.ModelForm):
                 attrs={
                     "placeholder": "Describe tu producto, servicio u oportunidad...",
                     "rows": 6
+                }
+            ),
+
+            "image": forms.ClearableFileInput(
+                attrs={
+                    "accept": "image/jpeg,image/png,image/webp",
+                    "class": "image-input",
                 }
             ),
 

@@ -1,0 +1,25 @@
+{
+  "name": "lux-android",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Aplicación Android local de Lux, sin backend ni servidor externo.",
+  "scripts": {
+    "android:add": "cap add android",
+    "android:prepare": "npm run android:add && node scripts/configure-android.mjs && npm run android:assets && npm run android:sync",
+    "android:sync": "cap sync android",
+    "android:assets": "capacitor-assets generate --android",
+    "android:open": "cap open android",
+    "android:debug": "npm run android:sync && cd android && gradlew.bat assembleDebug",
+    "android:bundle": "npm run android:sync && cd android && gradlew.bat bundleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.4.3",
+    "@capacitor/core": "^7.4.3",
+    "@capacitor/splash-screen": "^7.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^7.4.3",
+    "typescript": "^5.7.3"
+  }
+}
