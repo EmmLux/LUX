@@ -1,0 +1,39 @@
+{% extends 'accounts/base.html' %}
+{% block title %}{{ publicacion.title }} · LUX{% endblock %}
+{% block content %}
+<article class="profile-card glass">
+    {% if publicacion.image %}
+        <img class="publication-detail-image" src="{{ publicacion.image.url }}" alt="{{ publicacion.title }}">
+    {% endif %}
+
+    <div class="row luxury-row">
+        <span class="tag">{{ publicacion.get_category_display }}</span>
+        <strong class="price-pill">{% if publicacion.price %}${{ publicacion.price }} {{ publicacion.currency|upper }}{% else %}Consultar{% endif %}</strong>
+    </div>
+
+    <h1 class="page-heading">{{ publicacion.title }}</h1>
+    <p class="muted">{{ publicacion.description|linebreaksbr }}</p>
+
+    <div class="profile-head">
+        <div class="avatar">{{ publicacion.user.username|first|upper }}</div>
+        <div>
+            <span class="meta">Publicado por</span>
+            <h2><a href="{% url 'perfil_publico' publicacion.user.username %}">{{ publicacion.user.display_name|default:publicacion.user.username }}</a></h2>
+            <span class="meta">{{ publicacion.created_at|date:"d M Y, H:i" }}</span>
+        </div>
+    </div>
+
+    <div class="actions actions-stack">
+        {% if request.user == publicacion.user %}
+            <a class="button secondary" href="{% url 'editar_publicacion' publicacion.pk %}">EDITAR</a>
+            <form method="post" action="{% url 'eliminar_publicacion' publicacion.pk %}">{% csrf_token %}<button class="button danger" type="submit">ELIMINAR</button></form>
+        {% elif request.user.is_authenticated %}
+            <form method="post" action="{% url 'contactar_publicacion' publicacion.pk %}">{% csrf_token %}<button class="button" type="submit">CONTACTAR</button></form>
+            <form method="post" action="{% url 'proponer_oferta' publicacion.pk %}">{% csrf_token %}<button class="button secondary" type="submit">PROPONER OFERTA</button></form>
+        {% else %}
+            <a class="button" href="{% url 'login' %}?next={{ request.path|urlencode }}">INICIA SESIÓN PARA CONTACTAR</a>
+        {% endif %}
+    </div>
+</article>
+{% endblock %}
+

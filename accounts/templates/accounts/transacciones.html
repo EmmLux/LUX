@@ -1,0 +1,63 @@
+{% extends 'accounts/base.html' %}
+{% block title %}Transacciones · LUX{% endblock %}
+{% block content %}
+<section class="section">
+  <div class="section-title">
+    <div>
+      <span class="eyebrow">Mi actividad</span>
+      <h1 class="page-heading">Transacciones</h1>
+    </div>
+  </div>
+
+  {% if transactions %}
+    <div class="transaction-list">
+      {% for transaction in transactions %}
+        <article class="transaction-card glass status-{{ transaction.status }}">
+          <div class="transaction-head">
+            <div>
+              <span class="eyebrow">{{ transaction.publication.get_category_display|default:'Operación' }}</span>
+              <h3>{{ transaction.publication.title }}</h3>
+            </div>
+            <span class="status-pill status-{{ transaction.status }}">{{ transaction.get_status_display }}</span>
+          </div>
+
+          <div class="transaction-meta">
+            <span><strong>Comprador:</strong> {{ transaction.buyer.display_name|default:transaction.buyer.username }}</span>
+            <span><strong>Vendedor:</strong> {{ transaction.seller.display_name|default:transaction.seller.username }}</span>
+          </div>
+
+          <div class="transaction-grid">
+            <div>
+              <span class="meta">Monto</span>
+              <strong>${{ transaction.original_price }} {{ transaction.currency|upper }}</strong>
+            </div>
+            <div>
+              <span class="meta">Fecha</span>
+              <strong>{{ transaction.created_at|date:"d M Y" }}</strong>
+            </div>
+            <div>
+              <span class="meta">Comisión LUX</span>
+              <strong>${{ transaction.lux_fee }}</strong>
+            </div>
+            <div>
+              <span class="meta">Vendedor recibe</span>
+              <strong>${{ transaction.seller_amount }}</strong>
+            </div>
+          </div>
+
+          <div class="transaction-actions">
+            <a class="button secondary" href="{% url 'detalle_acuerdo' transaction.agreement_id %}">Ver detalle</a>
+            {% if transaction.status == 'completado' %}
+              <a class="button" href="{% url 'crear_review' transaction.pk %}">Evaluar</a>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty glass">
+      Aún no tienes transacciones. Cuando aceptes o pagues una oferta, aparecerán aquí.
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

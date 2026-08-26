@@ -266,7 +266,6 @@ def contactar_publicacion(request, pk):
         )
         return redirect("detalle_publicacion", pk=publicacion.pk)
 
-    # Store the smaller id first, making the unique constraint deterministic.
     participant_one, participant_two = sorted((request.user, publicacion.user), key=lambda user: user.pk)
     try:
         conversation, _ = Conversation.objects.get_or_create(
@@ -279,6 +278,32 @@ def contactar_publicacion(request, pk):
             participant_one=participant_one, participant_two=participant_two, publication=publicacion
         )
     return redirect("detalle_conversacion", pk=conversation.pk)
+
+
+@login_required
+def proponer_oferta(request, pk):
+    publicacion = get_object_or_404(Publication, pk=pk, status="activa")
+
+    if publicacion.user == request.user:
+        messages.warning(request, "No puedes proponer una oferta sobre tu propia publicación.")
+        return redirect("detalle_publicacion", pk=publicacion.pk)
+
+    participant_one, participant_two = sorted((request.user, publicacion.user), key=lambda user: user.pk)
+    try:
+        conversation, _ = Conversation.objects.get_or_create(
+            participant_one=participant_one,
+            participant_two=participant_two,
+            publication=publicacion,
+        )
+    except IntegrityError:
+        conversation = Conversation.objects.get(
+            participant_one=participant_one,
+            participant_two=participant_two,
+            publication=publicacion,
+        )
+
+    messages.success(request, "Continuamos con tu propuesta. Define el precio y envía la oferta.")
+    return redirect("crear_acuerdo", pk=conversation.pk)
 
 
 @login_required
@@ -318,6 +343,16 @@ def detalle_conversacion(request, pk):
 
 
 @login_required
+def transacciones(request):
+    transactions = (
+        Transaction.objects.filter(Q(buyer=request.user) | Q(seller=request.user))
+        .select_related("agreement", "publication", "buyer", "seller")
+        .order_by("-updated_at")
+    )
+    return render(request, "accounts/transacciones.html", {"transactions": transactions})
+
+
+@login_required
 def crear_acuerdo(request, pk):
     conversation = get_object_or_404(
         Conversation.objects.select_related("participant_one", "participant_two", "publication"), pk=pk
@@ -328,14 +363,17 @@ def crear_acuerdo(request, pk):
     if request.user == seller:
         return redirect("detalle_conversacion", pk=pk)
     form = AgreementForm(request.POST or None, initial={"price": conversation.publication.price, "currency": conversation.publication.currency})
-    if request.method == "POST" and form.is_valid():
-        agreement = form.save(commit=False)
-        agreement.buyer = request.user
-        agreement.seller = seller
-        agreement.publication = conversation.publication
-        agreement.conversation = conversation
-        agreement.save()
-        return redirect("detalle_acuerdo", pk=agreement.pk)
+    if request.method == "POST":
+        if form.is_valid():
+            agreement = form.save(commit=False)
+            agreement.buyer = request.user
+            agreement.seller = seller
+            agreement.publication = conversation.publication
+            agreement.conversation = conversation
+            agreement.save()
+            messages.success(request, "Tu oferta fue enviada correctamente. Espera la respuesta del vendedor.")
+            return redirect("detalle_acuerdo", pk=agreement.pk)
+        messages.error(request, "Revisa el precio de la oferta antes de enviarla.")
     return render(request, "accounts/acuerdo.html", {"form": form, "conversation": conversation})
 
 
