@@ -1,8 +1,11 @@
+from decimal import Decimal
+
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
 from .models import Conversation, Message, Publication, User
+from .services import calculate_platform_fee, calculate_seller_amount
 
 
 class LuxFlowTests(TestCase):
@@ -93,3 +96,28 @@ class LuxFlowTests(TestCase):
             fetch_redirect_response=False,
         )
         self.assertTrue(publication.image.name)
+
+    def test_platform_fee_uses_decimal_and_configured_percentage(self):
+        self.assertEqual(calculate_platform_fee("1000"), Decimal("100.00"))
+        self.assertEqual(calculate_seller_amount("500.55"), Decimal("450.50"))
+
+    def test_explore_filters_by_category_and_price(self):
+        Publication.objects.create(user=self.owner, title="Mesa", description="Madera", category="producto", price="900")
+        response = self.client.get(reverse("explorar"), {"category": "producto", "min_price": "800", "max_price": "1000"})
+        self.assertContains(response, "Mesa")
+        self.assertNotContains(response, "Servicio de diseño")
+
+    def test_inactive_publication_is_not_publicly_visible_or_contactable(self):
+        self.publication.status = "archivada"
+        self.publication.save(update_fields=["status"])
+        self.assertEqual(self.client.get(reverse("detalle_publicacion", args=[self.publication.pk])).status_code, 404)
+        self.client.force_login(self.visitor)
+        self.assertEqual(self.client.post(reverse("contactar_publicacion", args=[self.publication.pk])).status_code, 404)
+
+    def test_transaction_state_machine_rejects_cancelled_to_paid(self):
+        from .models import Agreement, Transaction
+        agreement = Agreement.objects.create(buyer=self.visitor, seller=self.owner, publication=self.publication, price="100")
+        transaction = Transaction.objects.create(agreement=agreement, buyer=self.visitor, seller=self.owner, publication=self.publication, original_price="100", lux_fee="10", seller_amount="90")
+        transaction.status = "cancelado"
+        with self.assertRaises(ValueError):
+            transaction.transition_to("pagado")

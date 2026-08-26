@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 
-from .models import Message, Publication
+from .models import Agreement, Message, Publication, Report, Review
 
 
 User = get_user_model()
@@ -46,6 +46,9 @@ class PublicationForm(forms.ModelForm):
             "image",
             "category",
             "price",
+            "currency",
+            "location",
+            "availability",
         ]
 
         widgets = {
@@ -77,7 +80,30 @@ class PublicationForm(forms.ModelForm):
                     "step": "0.01"
                 }
             ),
+            "currency": forms.Select(choices=(("mxn", "MXN"), ("usd", "USD"))),
         }
+
+    def clean_title(self):
+        title = self.cleaned_data["title"].strip()
+        if not title:
+            raise forms.ValidationError("El título no puede estar vacío.")
+        if len(title) < 5:
+            raise forms.ValidationError("El título debe tener al menos 5 caracteres.")
+        return title
+
+    def clean_description(self):
+        description = self.cleaned_data["description"].strip()
+        if not description:
+            raise forms.ValidationError("La descripción no puede estar vacía.")
+        if len(description) < 20:
+            raise forms.ValidationError("La descripción debe tener al menos 20 caracteres.")
+        return description
+
+    def clean_price(self):
+        price = self.cleaned_data.get("price")
+        if price is not None and price <= 0:
+            raise forms.ValidationError("El precio debe ser mayor que cero.")
+        return price
 
 
 class MessageForm(forms.ModelForm):
@@ -95,3 +121,35 @@ class MessageForm(forms.ModelForm):
         if not content:
             raise forms.ValidationError("Escribe un mensaje antes de enviarlo.")
         return content
+        return content
+
+
+class AgreementForm(forms.ModelForm):
+    class Meta:
+        model = Agreement
+        fields = ("price", "currency")
+
+    def clean_price(self):
+        price = self.cleaned_data["price"]
+        if price <= 0:
+            raise forms.ValidationError("El precio debe ser mayor que cero.")
+        return price
+
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ("rating", "content")
+        widgets = {"rating": forms.NumberInput(attrs={"min": 1, "max": 5})}
+
+    def clean_rating(self):
+        rating = self.cleaned_data["rating"]
+        if not 1 <= rating <= 5:
+            raise forms.ValidationError("La evaluación debe estar entre 1 y 5.")
+        return rating
+
+
+class ReportForm(forms.ModelForm):
+    class Meta:
+        model = Report
+        fields = ("reason", "description")

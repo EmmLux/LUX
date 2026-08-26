@@ -28,6 +28,48 @@ python manage.py migrate
 python manage.py collectstatic --noinput
 ```
 
+## PythonAnywhere
+
+PythonAnywhere no instala automáticamente las dependencias de `requirements.txt` en el entorno virtual. En una consola Bash del servidor:
+
+```bash
+cd /home/Lux0/lux
+mkvirtualenv --python=/usr/bin/python3.13 luxenv
+workon luxenv
+pip install -r requirements.txt
+python manage.py migrate --noinput
+python manage.py collectstatic --noinput
+```
+
+En el archivo WSGI de la pestaña **Web**, antes de `get_wsgi_application()`, configura las variables de producción. Sustituye el dominio por el que aparece en tu aplicación:
+
+```python
+import os
+import sys
+
+path = "/home/Lux0/lux"
+if path not in sys.path:
+	sys.path.append(path)
+
+os.environ["DJANGO_ENV"] = "production"
+os.environ["DEBUG"] = "False"
+os.environ["SECRET_KEY"] = "pega-aqui-una-clave-larga-y-aleatoria"
+os.environ["ALLOWED_HOSTS"] = "lux0.pythonanywhere.com"
+os.environ["CSRF_TRUSTED_ORIGINS"] = "https://lux0.pythonanywhere.com"
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "lux.settings")
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
+```
+
+Genera la clave una sola vez en una consola del servidor y pégala en el WSGI; no la subas a Git:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(50))"
+```
+
+En la configuración **Web**, selecciona `/home/Lux0/.virtualenvs/luxenv` como entorno virtual y pulsa **Reload**. Si usas PostgreSQL, añade también `DATABASE_URL` al WSGI; si no, el proyecto utilizará SQLite.
+
 ## Aplicación Android
 
 Cuando exista el dominio HTTPS definitivo, se define temporalmente en PowerShell antes de crear el paquete Android:

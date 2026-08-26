@@ -1,0 +1,683 @@
+ERROR 2026-08-26 00:15:27,876 log 9964 6992 Internal Server Error: /publicar/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 192, in crear_publicacion
+    return render(
+        request,
+        "accounts/publicar.html",
+        {"form": form},
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:15:37,447 log 9964 6992 Internal Server Error: /mensajes/1/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 317, in detalle_conversacion
+    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form})
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:15:45,126 log 9964 6992 Internal Server Error: /explorar/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 230, in publicaciones
+    return render(request, "accounts/publicaciones.html", {
+        "publicaciones": publicaciones_qs, "query": query, "category": category,
+        "min_price": minimum, "max_price": maximum, "order": ordering,
+        "categories": Publication.CATEGORY_CHOICES,
+    })
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+WARNING 2026-08-26 00:15:53,150 log 9964 6992 Not Found: /publicacion/1/
+WARNING 2026-08-26 00:15:53,180 log 9964 6992 Not Found: /publicacion/1/contactar/
+ERROR 2026-08-26 00:16:09,893 log 9964 6992 Internal Server Error: /login/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 65, in login_view
+    return render(request, "accounts/login.html")
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:16:27,163 log 9964 6992 Internal Server Error: /inicio/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 77, in inicio
+    return render(
+        request,
+        "accounts/inicio.html",
+        {"publicaciones": publicaciones},
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:17:13,526 log 9040 3212 Internal Server Error: /publicar/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 192, in crear_publicacion
+    return render(
+        request,
+        "accounts/publicar.html",
+        {"form": form},
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:17:21,468 log 9040 3212 Internal Server Error: /mensajes/1/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 317, in detalle_conversacion
+    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form})
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+ERROR 2026-08-26 00:17:30,833 log 9040 3212 Internal Server Error: /explorar/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 230, in publicaciones
+    return render(request, "accounts/publicaciones.html", {
+        "publicaciones": publicaciones_qs, "query": query, "category": category,
+        "min_price": minimum, "max_price": maximum, "order": ordering,
+        "categories": Publication.CATEGORY_CHOICES,
+    })
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 135, in render
+    compiled_parent = self.get_parent(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 132, in get_parent
+    return self.find_template(parent, context)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 110, in find_template
+    template, origin = context.template.engine.find_template(
+                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^
+        template_name,
+        ^^^^^^^^^^^^^^
+        skip=history,
+        ^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+        contents,
+    ...<2 lines>...
+        self.engine,
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 157, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 199, in compile_nodelist
+    nodelist = parser.parse()
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 602, in parse
+    raise self.error(token, e)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 600, in parse
+    compiled_result = compile_func(self, token)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 229, in do_block
+    raise TemplateSyntaxError(
+        "'%s' tag with name '%s' appears more than once" % (bits[0], block_name)
+    )
+django.template.exceptions.TemplateSyntaxError: Template: C:\Users\yeshu\OneDrive\Documentos\lux\accounts\templates\accounts\base.html, 'block' tag with name 'title' appears more than once
+WARNING 2026-08-26 00:17:39,901 log 9040 3212 Not Found: /publicacion/1/
+WARNING 2026-08-26 00:17:40,088 log 9040 3212 Not Found: /publicacion/1/contactar/
+ERROR 2026-08-26 00:18:04,300 log 9040 3212 Internal Server Error: /login/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 65, in login_view
+    return render(request, "accounts/login.html")
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 116, in render
+    url = self.url(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 113, in url
+    return self.handle_simple(path)
+           ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 129, in handle_simple
+    return staticfiles_storage.url(path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 235, in url
+    return self._url(self.stored_name, name, force)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 214, in _url
+    hashed_name = hashed_name_func(*args)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 601, in stored_name
+    raise ValueError(
+        "Missing staticfiles manifest entry for '%s'" % clean_name
+    )
+ValueError: Missing staticfiles manifest entry for 'accounts/css/publication-images.css'
+ERROR 2026-08-26 00:18:18,594 log 9040 3212 Internal Server Error: /inicio/
+Traceback (most recent call last):
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\accounts\views.py", line 77, in inicio
+    return render(
+        request,
+        "accounts/inicio.html",
+        {"publicaciones": publicaciones},
+    )
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\shortcuts.py", line 27, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 174, in render
+    return self._render(context)
+           ~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\loader_tags.py", line 160, in render
+    return compiled_parent._render(context)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\test\utils.py", line 113, in instrumented_test_render
+    return self.nodelist.render(context)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1107, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\template\base.py", line 1068, in render_annotated
+    return self.render(context)
+           ~~~~~~~~~~~^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 116, in render
+    url = self.url(context)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 113, in url
+    return self.handle_simple(path)
+           ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\templatetags\static.py", line 129, in handle_simple
+    return staticfiles_storage.url(path)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 235, in url
+    return self._url(self.stored_name, name, force)
+           ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 214, in _url
+    hashed_name = hashed_name_func(*args)
+  File "C:\Users\yeshu\OneDrive\Documentos\lux\.venv\Lib\site-packages\django\contrib\staticfiles\storage.py", line 601, in stored_name
+    raise ValueError(
+        "Missing staticfiles manifest entry for '%s'" % clean_name
+    )
+ValueError: Missing staticfiles manifest entry for 'accounts/css/publication-images.css'
+WARNING 2026-08-26 00:20:20,768 log 1788 544 Not Found: /publicacion/1/
+WARNING 2026-08-26 00:20:20,805 log 1788 544 Not Found: /publicacion/1/contactar/
+WARNING 2026-08-26 00:20:34,328 log 1788 544 Not Found: /publicacion/1/editar/
