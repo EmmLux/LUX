@@ -13,10 +13,18 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
+try:
+    from dotenv import load_dotenv
+except ModuleNotFoundError:  # pragma: no cover - optional in production
+    load_dotenv = None
+
 import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if load_dotenv is not None:
+    load_dotenv(BASE_DIR / ".env", override=False)
 
 
 # Quick-start development settings - unsuitable for production
@@ -177,6 +185,18 @@ LUX_PLATFORM_FEE_PERCENT = os.environ.get("LUX_PLATFORM_FEE_PERCENT", "10")
 STRIPE_PUBLIC_KEY = os.environ.get("STRIPE_PUBLIC_KEY", "")
 STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+
+if not DEBUG:
+    for key_name, value, expected_prefix in (
+        ("STRIPE_PUBLIC_KEY", STRIPE_PUBLIC_KEY, "pk_test_"),
+        ("STRIPE_SECRET_KEY", STRIPE_SECRET_KEY, "sk_test_"),
+        ("STRIPE_WEBHOOK_SECRET", STRIPE_WEBHOOK_SECRET, "whsec_"),
+    ):
+        if value and not value.startswith(expected_prefix):
+            raise RuntimeError(
+                f"{key_name} debe usar una clave de Stripe TEST válida en producción. "
+                "Revisa la variable de entorno y no la hardcodees en código."
+            )
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

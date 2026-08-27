@@ -5,3 +5,4 @@ psycopg[binary]>=3.3,<4
 whitenoise[brotli]>=6.11,<7
 Pillow>=11,<12
 stripe>=12,<13
+python-dotenv>=1.0,<2
