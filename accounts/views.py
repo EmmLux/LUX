@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Q
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -330,6 +330,7 @@ def detalle_conversacion(request, pk):
         messages.error(request, "No tienes permiso para ver esa conversación.")
         return redirect("conversaciones")
     conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+    agreements = conversation.agreements.select_related("buyer", "seller", "publication").order_by("-created_at")
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -339,7 +340,7 @@ def detalle_conversacion(request, pk):
             return redirect("detalle_conversacion", pk=conversation.pk)
     else:
         form = MessageForm()
-    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form})
+    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form, "agreements": agreements})
 
 
 @login_required
@@ -365,12 +366,28 @@ def crear_acuerdo(request, pk):
     form = AgreementForm(request.POST or None, initial={"price": conversation.publication.price, "currency": conversation.publication.currency})
     if request.method == "POST":
         if form.is_valid():
-            agreement = form.save(commit=False)
-            agreement.buyer = request.user
-            agreement.seller = seller
-            agreement.publication = conversation.publication
-            agreement.conversation = conversation
-            agreement.save()
+            try:
+                with transaction.atomic():
+                    agreement = form.save(commit=False)
+                    agreement.buyer = request.user
+                    agreement.seller = seller
+                    agreement.publication = conversation.publication
+                    agreement.conversation = conversation
+                    agreement.save()
+                    Message.objects.create(
+                        conversation=conversation,
+                        sender=request.user,
+                        content=(
+                            f"Nueva oferta para {agreement.publication.title}: "
+                            f"{agreement.price} {agreement.currency.upper()}."
+                        ),
+                    )
+                    conversation.last_activity_at = timezone.now()
+                    conversation.save(update_fields=["last_activity_at"])
+            except Exception:
+                logger.exception("No se pudo guardar la oferta para la conversación %s", conversation.pk)
+                messages.error(request, "No fue posible enviar la oferta. Inténtalo de nuevo.")
+                return redirect("crear_acuerdo", pk=conversation.pk)
             messages.success(request, "Tu oferta fue enviada correctamente. Espera la respuesta del vendedor.")
             return redirect("detalle_acuerdo", pk=agreement.pk)
         messages.error(request, "Revisa el precio de la oferta antes de enviarla.")

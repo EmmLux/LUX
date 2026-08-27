@@ -142,6 +142,9 @@ class LuxFlowTests(TestCase):
         self.assertRedirects(response, reverse("detalle_acuerdo", args=[agreement.pk]), fetch_redirect_response=False)
         self.assertEqual(agreement.buyer, self.visitor)
         self.assertEqual(agreement.seller, self.owner)
+        offer_message = Message.objects.get(conversation=conversation)
+        self.assertEqual(offer_message.sender, self.visitor)
+        self.assertContains(self.client.get(reverse("detalle_conversacion", args=[conversation.pk])), "Ofertas en esta conversación")
 
         self.client.force_login(self.owner)
         response = self.client.post(reverse("cambiar_estado_acuerdo", args=[agreement.pk, "aceptado"]))

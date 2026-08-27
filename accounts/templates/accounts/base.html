@@ -15,17 +15,25 @@
 	<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Inter:wght@400;500;1,600;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="{% static 'accounts/css/lux.css' %}">
 	<link rel="stylesheet" href="{% static 'accounts/css/publication-images.css' %}">
+	<style>
+		.glass-nav-button{position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:8px 14px;color:#eee;text-decoration:none;font:500 11px/1 Inter,Arial,sans-serif;letter-spacing:.3px;background:linear-gradient(135deg,rgba(255,255,255,.11),rgba(215,182,108,.06));border:1px solid rgba(255,241,189,.2);border-radius:999px;box-shadow:0 8px 20px rgba(0,0,0,.2),inset 0 1px rgba(255,255,255,.14);backdrop-filter:blur(14px) saturate(135%);transition:transform 210ms ease,background 210ms ease,border-color 210ms ease,box-shadow 210ms ease}
+		.glass-nav-button:hover{color:var(--gold-light);background:linear-gradient(135deg,rgba(255,255,255,.17),rgba(215,182,108,.13));border-color:rgba(255,241,189,.4);box-shadow:0 10px 24px rgba(0,0,0,.27),inset 0 1px rgba(255,255,255,.22);transform:translateY(-1px)}
+		.glass-nav-button:active{transform:scale(.975)}
+		.glass-nav-button:focus-visible{outline:2px solid var(--gold-light);outline-offset:3px}
+		.nav-links form{margin:0}
+		@media(max-width:750px){.nav-links{display:none}.mobile-nav{position:fixed;left:12px;right:12px;bottom:calc(12px + env(safe-area-inset-bottom));z-index:10;display:flex;justify-content:space-around;gap:6px;padding:8px;background:rgba(10,11,14,.78);border:1px solid rgba(255,241,189,.18);border-radius:18px;box-shadow:0 14px 35px rgba(0,0,0,.4);backdrop-filter:blur(20px) saturate(140%)}.mobile-nav .glass-nav-button{flex:1;min-width:0;padding:9px 6px;font-size:10px}.container{padding-bottom:calc(100px + env(safe-area-inset-bottom))}}
+	</style>
 </head>
 <body>
 	<nav class="nav">
 		<a class="brand" href="{% url 'inicio' %}" aria-label="Lux, inicio">LUX</a>
 		<div class="nav-links">
 			{% if request.user.is_authenticated %}
-				<a href="{% url 'explorar' %}">Explorar</a>
-				<a href="{% url 'crear_publicacion' %}">Publicar</a>
-				<a href="{% url 'conversaciones' %}">Mensajes</a>
-				<a href="{% url 'perfil' %}">Perfil</a>
-				<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link-button" type="submit">Cerrar sesión</button></form>
+				<a class="glass-nav-button" href="{% url 'explorar' %}">Explorar</a>
+				<a class="glass-nav-button" href="{% url 'crear_publicacion' %}">Publicar</a>
+				<a class="glass-nav-button" href="{% url 'conversaciones' %}">Mensajes</a>
+				<a class="glass-nav-button" href="{% url 'perfil' %}">Perfil</a>
+				<form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="glass-nav-button link-button" type="submit">Cerrar sesión</button></form>
 			{% else %}
 				<a href="{% url 'explorar' %}">Explorar</a>
 				<a href="{% url 'login' %}">Iniciar sesión</a>
@@ -39,10 +47,10 @@
 	</main>
 	{% if request.user.is_authenticated %}
 		<nav class="mobile-nav" aria-label="Navegación principal">
-			<a href="{% url 'explorar' %}">Explorar</a>
-			<a href="{% url 'crear_publicacion' %}">Publicar</a>
-			<a href="{% url 'conversaciones' %}">Mensajes</a>
-			<a href="{% url 'perfil' %}">Perfil</a>
+			<a class="glass-nav-button" href="{% url 'explorar' %}">Explorar</a>
+			<a class="glass-nav-button" href="{% url 'crear_publicacion' %}">Publicar</a>
+			<a class="glass-nav-button" href="{% url 'conversaciones' %}">Mensajes</a>
+			<a class="glass-nav-button" href="{% url 'perfil' %}">Perfil</a>
 		</nav>
 	{% endif %}
 </body>
