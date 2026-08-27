@@ -2,11 +2,37 @@
 {% block title %}Chat con {{ other_user.username }} · LUX{% endblock %}
 {% block content %}
 <section class="chat glass">
-  <header class="chat-header"><a class="tag" href="{% url 'conversaciones' %}">← Mensajes</a><h1 style="margin:8px 0 4px">{{ other_user.display_name|default:other_user.username }}</h1>{% if conversation.publication %}<span class="meta">Sobre: <a href="{% url 'detalle_publicacion' conversation.publication.pk %}" style="color:var(--gold)">{{ conversation.publication.title }}</a></span>{% endif %}</header>
-  <div class="chat-messages">{% for message in conversation.messages.all %}<div class="bubble {% if message.sender == request.user %}mine{% endif %}">{{ message.content|linebreaksbr }}<span class="stamp">{{ message.created_at|date:"d M, H:i" }}</span></div>{% empty %}<p class="muted">Aún no hay mensajes. Saluda para iniciar la conversación.</p>{% endfor %}</div>
-  {% if agreements %}<div class="conversation-agreements"><span class="eyebrow">Ofertas en esta conversación</span>{% for agreement in agreements %}<a class="agreement-link glass" href="{% url 'detalle_acuerdo' agreement.pk %}"><strong>Oferta de {{ agreement.buyer.display_name|default:agreement.buyer.username }}</strong><span>{{ agreement.price }} {{ agreement.currency|upper }} · {{ agreement.get_status_display }}</span></a>{% endfor %}</div>{% endif %}
-  <form method="post" class="message-form">{% csrf_token %}{{ form.content }}<button class="button" type="submit">ENVIAR</button></form>
-  {% if conversation.publication and request.user != conversation.publication.user %}<a class="button secondary" href="{% url 'crear_acuerdo' conversation.pk %}">PROPONER ACUERDO</a>{% endif %}
+  <header class="chat-header">
+    <a class="tag" href="{% url 'conversaciones' %}">← Mensajes</a>
+    <h1>{{ other_user.display_name|default:other_user.username }}</h1>
+    {% if conversation.publication %}<span class="meta">Sobre: <a href="{% url 'detalle_publicacion' conversation.publication.pk %}">{{ conversation.publication.title }}</a></span>{% endif %}
+  </header>
+  {% if agreements %}<span class="eyebrow timeline-label">Ofertas en esta conversación</span>{% endif %}
+  <div class="chat-messages">
+    {% for entry in timeline %}
+      {% if entry.kind == 'agreement' %}
+        {% with agreement=entry.item %}
+          <article class="offer-card offer-{{ agreement.status }}" aria-label="Oferta de {{ agreement.buyer.display_name|default:agreement.buyer.username }}">
+            <div class="offer-heading"><span class="offer-icon" aria-hidden="true">$</span><div><span class="eyebrow">Oferta</span><strong>{{ agreement.buyer.display_name|default:agreement.buyer.username }}</strong></div><span class="offer-status">{% if agreement.status == 'propuesta' %}Pendiente{% else %}{{ agreement.get_status_display }}{% endif %}</span></div>
+            <a class="offer-publication" href="{% url 'detalle_publicacion' agreement.publication.pk %}">{{ agreement.publication.title }}</a>
+            <div class="offer-details"><strong>{{ agreement.price }} {{ agreement.currency|upper }}</strong><time datetime="{{ agreement.created_at|date:'c' }}">{{ agreement.created_at|date:"d M, H:i" }}</time></div>
+            <div class="offer-actions">
+              {% if request.user == agreement.seller and agreement.status == 'propuesta' %}
+                <form method="post" action="{% url 'cambiar_estado_acuerdo' agreement.pk 'aceptado' %}">{% csrf_token %}<button class="button" type="submit">Aceptar</button></form>
+                <form method="post" action="{% url 'cambiar_estado_acuerdo' agreement.pk 'rechazado' %}">{% csrf_token %}<button class="button secondary" type="submit">Rechazar</button></form>
+              {% endif %}
+              {% if agreement.status == 'propuesta' %}<a class="button secondary" href="{% url 'crear_acuerdo' conversation.pk %}?counteroffer={{ agreement.pk }}">Contraoferta</a>{% endif %}
+              <a class="offer-detail" href="{% url 'detalle_acuerdo' agreement.pk %}">Ver detalle</a>
+            </div>
+          </article>
+        {% endwith %}
+      {% else %}
+        {% with message=entry.item %}<div class="bubble {% if message.sender == request.user %}mine{% endif %}">{{ message.content|linebreaksbr }}<span class="stamp">{{ message.created_at|date:"d M, H:i" }}</span></div>{% endwith %}
+      {% endif %}
+    {% empty %}<p class="muted chat-empty">Aún no hay mensajes. Saluda para iniciar la conversación.</p>{% endfor %}
+  </div>
+  <form method="post" class="message-form">{% csrf_token %}{{ form.content }}<button class="button" type="submit">Enviar</button></form>
+  {% if conversation.publication and request.user != conversation.publication.user %}<a class="button secondary" href="{% url 'crear_acuerdo' conversation.pk %}">Proponer acuerdo</a>{% endif %}
   {% if form.content.errors %}<div class="errorlist" style="padding:0 18px 18px">{{ form.content.errors }}</div>{% endif %}
 </section>
 {% endblock %}

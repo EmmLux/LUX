@@ -330,7 +330,24 @@ def detalle_conversacion(request, pk):
         messages.error(request, "No tienes permiso para ver esa conversación.")
         return redirect("conversaciones")
     conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
-    agreements = conversation.agreements.select_related("buyer", "seller", "publication").order_by("-created_at")
+    agreements = list(
+        conversation.agreements.select_related("buyer", "seller", "publication").order_by("created_at", "pk")
+    )
+    offer_messages = {
+        (
+            agreement.buyer_id,
+            f"Nueva oferta para {agreement.publication.title}: {agreement.price} {agreement.currency.upper()}."
+        )
+        for agreement in agreements
+    }
+    timeline = []
+    for message in conversation.messages.select_related("sender").all():
+        if (message.sender_id, message.content) in offer_messages:
+            offer_messages.remove((message.sender_id, message.content))
+            continue
+        timeline.append({"kind": "message", "item": message})
+    timeline.extend({"kind": "agreement", "item": agreement} for agreement in agreements)
+    timeline.sort(key=lambda entry: (entry["item"].created_at, entry["kind"]))
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -340,7 +357,7 @@ def detalle_conversacion(request, pk):
             return redirect("detalle_conversacion", pk=conversation.pk)
     else:
         form = MessageForm()
-    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form, "agreements": agreements})
+    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form, "agreements": agreements, "timeline": timeline})
 
 
 @login_required
@@ -361,15 +378,27 @@ def crear_acuerdo(request, pk):
     if request.user not in (conversation.participant_one, conversation.participant_two) or not conversation.publication:
         return redirect("conversaciones")
     seller = conversation.publication.user
-    if request.user == seller:
+    counteroffer = None
+    counteroffer_pk = request.GET.get("counteroffer")
+    if counteroffer_pk:
+        counteroffer = get_object_or_404(
+            Agreement,
+            pk=counteroffer_pk,
+            conversation=conversation,
+            buyer__in=(conversation.participant_one, conversation.participant_two),
+        )
+        if request.user not in (counteroffer.buyer, counteroffer.seller):
+            return redirect("detalle_conversacion", pk=pk)
+    elif request.user == seller:
         return redirect("detalle_conversacion", pk=pk)
-    form = AgreementForm(request.POST or None, initial={"price": conversation.publication.price, "currency": conversation.publication.currency})
+    initial_agreement = counteroffer or conversation.publication
+    form = AgreementForm(request.POST or None, initial={"price": initial_agreement.price, "currency": initial_agreement.currency})
     if request.method == "POST":
         if form.is_valid():
             try:
                 with transaction.atomic():
                     agreement = form.save(commit=False)
-                    agreement.buyer = request.user
+                    agreement.buyer = counteroffer.buyer if counteroffer else request.user
                     agreement.seller = seller
                     agreement.publication = conversation.publication
                     agreement.conversation = conversation
@@ -389,9 +418,9 @@ def crear_acuerdo(request, pk):
                 messages.error(request, "No fue posible enviar la oferta. Inténtalo de nuevo.")
                 return redirect("crear_acuerdo", pk=conversation.pk)
             messages.success(request, "Tu oferta fue enviada correctamente. Espera la respuesta del vendedor.")
-            return redirect("detalle_acuerdo", pk=agreement.pk)
+            return redirect("detalle_conversacion", pk=conversation.pk)
         messages.error(request, "Revisa el precio de la oferta antes de enviarla.")
-    return render(request, "accounts/acuerdo.html", {"form": form, "conversation": conversation})
+    return render(request, "accounts/acuerdo.html", {"form": form, "conversation": conversation, "counteroffer": counteroffer})
 
 
 @login_required
@@ -410,8 +439,8 @@ def cambiar_estado_acuerdo(request, pk, status):
         return redirect("conversaciones")
     if status == "aceptado" and request.user != agreement.seller:
         return redirect("detalle_acuerdo", pk=pk)
-    if status in {"rechazado", "cancelado"}:
-        pass
+    if status == "rechazado" and request.user != agreement.seller:
+        return redirect("detalle_acuerdo", pk=pk)
     try:
         agreement.transition_to(status)
     except ValueError:
