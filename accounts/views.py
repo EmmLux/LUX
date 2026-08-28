@@ -504,6 +504,113 @@ def detalle_conversacion(request, pk):
         form = MessageForm()
     return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form})
 
+@login_required
+def proponer_oferta(request, pk):
+    publicacion = get_object_or_404(Publication, pk=pk)
+
+    if request.user == publicacion.user:
+        return redirect("detalle_publicacion", pk=pk)
+
+    conversation = (
+        Conversation.objects.filter(
+            publication=publicacion,
+            participant_one=request.user,
+            participant_two=publicacion.user,
+        ).first()
+        or Conversation.objects.filter(
+            publication=publicacion,
+            participant_one=publicacion.user,
+            participant_two=request.user,
+        ).first()
+    )
+
+    if not conversation:
+        conversation = Conversation.objects.create(
+            participant_one=request.user,
+            participant_two=publicacion.user,
+            publication=publicacion,
+        )
+
+    form = AgreementForm(
+        request.POST or None,
+        initial={
+            "price": publicacion.price,
+            "currency": publicacion.currency,
+        },
+    )
+
+    if request.method == "POST" and form.is_valid():
+        agreement = form.save(commit=False)
+        agreement.buyer = request.user
+        agreement.seller = publicacion.user
+        agreement.publication = publicacion
+        agreement.conversation = conversation
+        agreement.save()
+
+        return redirect("detalle_acuerdo", pk=agreement.pk)
+
+    return render(
+        request,
+        "accounts/acuerdo.html",
+        {
+            "form": form,
+            "conversation": conversation,
+        },
+    )
+
+@login_required
+def proponer_oferta(request, pk):
+    publicacion = get_object_or_404(Publication, pk=pk)
+
+    if request.user == publicacion.user:
+        return redirect("detalle_publicacion", pk=pk)
+
+    conversation = (
+        Conversation.objects.filter(
+            publication=publicacion,
+            participant_one=request.user,
+            participant_two=publicacion.user,
+        ).first()
+        or Conversation.objects.filter(
+            publication=publicacion,
+            participant_one=publicacion.user,
+            participant_two=request.user,
+        ).first()
+    )
+
+    if not conversation:
+        conversation = Conversation.objects.create(
+            participant_one=request.user,
+            participant_two=publicacion.user,
+            publication=publicacion,
+        )
+
+    form = AgreementForm(
+        request.POST or None,
+        initial={
+            "price": publicacion.price,
+            "currency": publicacion.currency,
+        },
+    )
+
+    if request.method == "POST" and form.is_valid():
+        agreement = form.save(commit=False)
+        agreement.buyer = request.user
+        agreement.seller = publicacion.user
+        agreement.publication = publicacion
+        agreement.conversation = conversation
+        agreement.save()
+
+        return redirect("detalle_acuerdo", pk=agreement.pk)
+
+    return render(
+        request,
+        "accounts/acuerdo.html",
+        {
+            "form": form,
+            "conversation": conversation,
+        },
+    )
 
 @login_required
 def crear_acuerdo(request, pk):
