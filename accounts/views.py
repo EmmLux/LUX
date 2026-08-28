@@ -1,12 +1,15 @@
 from decimal import Decimal
+import json
 import logging
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Count, Q
-from django.db import IntegrityError, transaction
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -14,14 +17,102 @@ from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-logger = logging.getLogger(__name__)
-
 from .forms import AgreementForm, MessageForm, ProfileForm, PublicationForm, RegistrationForm, ReportForm, ReviewForm
 from .models import Agreement, Conversation, Message, Publication, Report, Review, Transaction
 from .services import calculate_platform_fee, calculate_seller_amount
 
 
+logger = logging.getLogger(__name__)
 User = get_user_model()
+
+def _stripe_sdk():
+    try:
+        import stripe
+    except ImportError as exc:
+        logger.exception("Dependencia Stripe no instalada.")
+        raise exc
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+    return stripe
+
+
+def _stripe_v2_request(method, path, payload=None):
+    stripe = _stripe_sdk()
+    body = json.dumps(payload).encode("utf-8") if payload is not None else None
+    request = Request(
+        f"https://api.stripe.com{path}",
+        data=body,
+        headers={
+            "Authorization": f"Bearer {settings.STRIPE_SECRET_KEY}",
+            "Content-Type": "application/json",
+            "Stripe-Version": "2026-08-26.preview",
+        },
+        method=method,
+    )
+    try:
+        with urlopen(request, timeout=30) as response:
+            response_body = response.read()
+            status_code = response.status
+            response_headers = dict(response.headers.items())
+    except HTTPError as exc:
+        response_body = exc.read()
+        status_code = exc.code
+        response_headers = dict(exc.headers.items()) if exc.headers else {}
+    except URLError as exc:
+        raise stripe.error.APIConnectionError(str(exc.reason)) from exc
+
+    try:
+        response_data = json.loads(response_body.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError):
+        response_data = {"raw": response_body.decode("utf-8", errors="replace")}
+
+    if status_code >= 400:
+        error_data = response_data.get("error", response_data) if isinstance(response_data, dict) else response_data
+        error_message = error_data.get("message", "Stripe devolvió un error HTTP.") if isinstance(error_data, dict) else str(error_data)
+        raise stripe.error.APIError(
+            message=error_message,
+            http_body=response_body,
+            http_status=status_code,
+            json_body=response_data,
+            headers=response_headers,
+            code=error_data.get("code") if isinstance(error_data, dict) else None,
+        )
+
+    return response_data
+
+
+def _stripe_create_connected_account(user):
+    return _stripe_v2_request(
+        "POST",
+        "/v2/core/accounts",
+        {
+            "contact_email": user.email,
+            "dashboard": "full",
+            "identity": {"country": "MX"},
+            "configuration": {
+                "merchant": {
+                    "capabilities": {"card_payments": {"requested": True}},
+                },
+            },
+            "defaults": {
+                "currency": "mxn",
+                "responsibilities": {
+                    "fees_collector": "stripe",
+                    "losses_collector": "stripe",
+                },
+            },
+        },
+    )
+
+
+def _stripe_get_account(account_id):
+    stripe = _stripe_sdk()
+    try:
+        return _stripe_v2_request("GET", f"/v2/core/accounts/{account_id}")
+    except stripe.error.APIError as exc:
+        if exc.http_status != 404:
+            raise
+        logger.info("Cuenta %s se consulta mediante el endpoint v1 compatible.", account_id)
+        return stripe.Account.retrieve(account_id)
 
 
 def registro(request):
@@ -98,60 +189,157 @@ def perfil(request):
 @login_required
 def configurar_cobros(request):
     if not settings.STRIPE_SECRET_KEY:
-        logger.warning(f"Intento de configurar cobros sin STRIPE_SECRET_KEY configurado. Usuario: {request.user.username}")
-        messages.error(request, "Stripe TEST aún no está configurado en el servidor.")
+        logger.warning(
+            "Stripe TEST no está configurado para %s.",
+            request.user.username,
+        )
+        messages.error(
+            request,
+            "Stripe TEST aún no está configurado en el servidor.",
+        )
         return redirect("perfil")
+
     try:
-        import stripe
-    except ImportError:
-        logger.error("La dependencia Stripe no está instalada.")
-        messages.error(request, "La dependencia Stripe no está instalada.")
-        return redirect("perfil")
-    try:
-        stripe.api_key = settings.STRIPE_SECRET_KEY
+        stripe = _stripe_sdk()
+
         if not request.user.stripe_account_id:
-            account = stripe.Account.create(
-                type="express",
-                country="MX",
-                email=request.user.email,
-                capabilities={"card_payments": {"requested": True}, "transfers": {"requested": True}},
-                metadata={"lux_user_id": str(request.user.pk)},
+            account = _stripe_create_connected_account(request.user)
+            request.user.stripe_account_id = account.get("id")
+
+            if not request.user.stripe_account_id:
+                raise ValueError(
+                    "Stripe no devolvió un Account ID."
+                )
+
+            logger.info(
+                "Cuenta Stripe Connect v2 creada para %s: %s",
+                request.user.username,
+                request.user.stripe_account_id,
             )
-            request.user.stripe_account_id = account.id
-            logger.info(f"Nueva cuenta Stripe Express creada. Usuario: {request.user.username}, Account ID: {account.id}")
+
         request.user.stripe_account_status = "pendiente"
-        request.user.save(update_fields=["stripe_account_id", "stripe_account_status"])
+        request.user.save(
+            update_fields=[
+                "stripe_account_id",
+                "stripe_account_status",
+            ]
+        )
+
+        # Stripe permite utilizar Account Links v1 con IDs de Accounts v2.
         account_link = stripe.AccountLink.create(
             account=request.user.stripe_account_id,
-            refresh_url=request.build_absolute_uri(reverse("configurar_cobros")),
-            return_url=request.build_absolute_uri(reverse("cobros_configurados")),
+            refresh_url=request.build_absolute_uri(
+                reverse("configurar_cobros")
+            ),
+            return_url=request.build_absolute_uri(
+                reverse("cobros_configurados")
+            ),
             type="account_onboarding",
         )
+
+        logger.info(
+            "Onboarding Stripe generado para %s.",
+            request.user.stripe_account_id,
+        )
+
         return redirect(account_link.url)
-    except stripe.error.StripeError as e:
-        logger.error(f"Error al configurar cobros Stripe para usuario {request.user.username}: {str(e)}")
-        messages.error(request, "No fue posible iniciar la configuración de cobros TEST.")
+
+    except ValueError as exc:
+        logger.error(
+            "No se pudo iniciar cobros para %s: %s",
+            request.user.username,
+            exc,
+        )
+        messages.error(request, str(exc))
+        return redirect("perfil")
+
+    except Exception as exc:
+        logger.exception(
+            "Error Stripe al configurar cobros para %s: %s",
+            request.user.username,
+            exc,
+        )
+
+        detail = str(exc).strip()
+
+        messages.error(
+            request,
+            (
+                "Stripe no pudo iniciar la configuración de cobros TEST: "
+                f"{detail[:240]}"
+            )
+            if detail
+            else "No fue posible iniciar la configuración de cobros TEST.",
+        )
+
         return redirect("perfil")
 
 
 @login_required
 def cobros_configurados(request):
-    if not settings.STRIPE_SECRET_KEY or not request.user.stripe_account_id:
+    if (
+        not settings.STRIPE_SECRET_KEY
+        or not request.user.stripe_account_id
+    ):
         return redirect("perfil")
+
     try:
-        import stripe
-    except ImportError:
-        messages.error(request, "La dependencia Stripe no está instalada.")
-        return redirect("perfil")
-    try:
-        stripe.api_key = settings.STRIPE_SECRET_KEY
-        account = stripe.Account.retrieve(request.user.stripe_account_id)
-        configured = bool(account.get("charges_enabled") and account.get("payouts_enabled"))
-        request.user.stripe_account_status = "configurada" if configured else "pendiente"
-        request.user.save(update_fields=["stripe_account_status"])
-        messages.success(request, "Estado de cobros actualizado desde Stripe.")
-    except stripe.error.StripeError:
-        messages.error(request, "No fue posible consultar el estado de Stripe.")
+        account = _stripe_get_account(
+            request.user.stripe_account_id
+        )
+
+        configured = False
+
+        if isinstance(account, dict):
+            configuration = account.get("configuration") or {}
+            merchant = configuration.get("merchant") or {}
+
+            card_payments = (
+                merchant.get("capabilities", {})
+                .get("card_payments", {})
+            )
+
+            configured = bool(
+                card_payments.get("status") == "active"
+            )
+
+            if not configured:
+                configured = bool(
+                    account.get("charges_enabled")
+                    and account.get("payouts_enabled")
+                )
+
+        request.user.stripe_account_status = (
+            "configurada" if configured else "pendiente"
+        )
+
+        request.user.save(
+            update_fields=["stripe_account_status"]
+        )
+
+        if configured:
+            messages.success(
+                request,
+                "Cobros configurados correctamente en Stripe TEST.",
+            )
+        else:
+            messages.info(
+                request,
+                "La configuración de cobros está pendiente en Stripe Connect.",
+            )
+
+    except Exception as exc:
+        logger.exception(
+            "No se pudo consultar Stripe para %s: %s",
+            request.user.username,
+            exc,
+        )
+
+        messages.error(
+            request,
+            f"No fue posible consultar Stripe: {str(exc)[:240]}",
+        )
+
     return redirect("perfil")
 
 
@@ -266,6 +454,7 @@ def contactar_publicacion(request, pk):
         )
         return redirect("detalle_publicacion", pk=publicacion.pk)
 
+    # Store the smaller id first, making the unique constraint deterministic.
     participant_one, participant_two = sorted((request.user, publicacion.user), key=lambda user: user.pk)
     try:
         conversation, _ = Conversation.objects.get_or_create(
@@ -278,32 +467,6 @@ def contactar_publicacion(request, pk):
             participant_one=participant_one, participant_two=participant_two, publication=publicacion
         )
     return redirect("detalle_conversacion", pk=conversation.pk)
-
-
-@login_required
-def proponer_oferta(request, pk):
-    publicacion = get_object_or_404(Publication, pk=pk, status="activa")
-
-    if publicacion.user == request.user:
-        messages.warning(request, "No puedes proponer una oferta sobre tu propia publicación.")
-        return redirect("detalle_publicacion", pk=publicacion.pk)
-
-    participant_one, participant_two = sorted((request.user, publicacion.user), key=lambda user: user.pk)
-    try:
-        conversation, _ = Conversation.objects.get_or_create(
-            participant_one=participant_one,
-            participant_two=participant_two,
-            publication=publicacion,
-        )
-    except IntegrityError:
-        conversation = Conversation.objects.get(
-            participant_one=participant_one,
-            participant_two=participant_two,
-            publication=publicacion,
-        )
-
-    messages.success(request, "Continuamos con tu propuesta. Define el precio y envía la oferta.")
-    return redirect("crear_acuerdo", pk=conversation.pk)
 
 
 @login_required
@@ -330,24 +493,6 @@ def detalle_conversacion(request, pk):
         messages.error(request, "No tienes permiso para ver esa conversación.")
         return redirect("conversaciones")
     conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
-    agreements = list(
-        conversation.agreements.select_related("buyer", "seller", "publication").order_by("created_at", "pk")
-    )
-    offer_messages = {
-        (
-            agreement.buyer_id,
-            f"Nueva oferta para {agreement.publication.title}: {agreement.price} {agreement.currency.upper()}."
-        )
-        for agreement in agreements
-    }
-    timeline = []
-    for message in conversation.messages.select_related("sender").all():
-        if (message.sender_id, message.content) in offer_messages:
-            offer_messages.remove((message.sender_id, message.content))
-            continue
-        timeline.append({"kind": "message", "item": message})
-    timeline.extend({"kind": "agreement", "item": agreement} for agreement in agreements)
-    timeline.sort(key=lambda entry: (entry["item"].created_at, entry["kind"]))
     if request.method == "POST":
         form = MessageForm(request.POST)
         if form.is_valid():
@@ -357,17 +502,7 @@ def detalle_conversacion(request, pk):
             return redirect("detalle_conversacion", pk=conversation.pk)
     else:
         form = MessageForm()
-    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form, "agreements": agreements, "timeline": timeline})
-
-
-@login_required
-def transacciones(request):
-    transactions = (
-        Transaction.objects.filter(Q(buyer=request.user) | Q(seller=request.user))
-        .select_related("agreement", "publication", "buyer", "seller")
-        .order_by("-updated_at")
-    )
-    return render(request, "accounts/transacciones.html", {"transactions": transactions})
+    return render(request, "accounts/detalle_conversacion.html", {"conversation": conversation, "other_user": conversation.other_participant(request.user), "form": form})
 
 
 @login_required
@@ -378,49 +513,18 @@ def crear_acuerdo(request, pk):
     if request.user not in (conversation.participant_one, conversation.participant_two) or not conversation.publication:
         return redirect("conversaciones")
     seller = conversation.publication.user
-    counteroffer = None
-    counteroffer_pk = request.GET.get("counteroffer")
-    if counteroffer_pk:
-        counteroffer = get_object_or_404(
-            Agreement,
-            pk=counteroffer_pk,
-            conversation=conversation,
-            buyer__in=(conversation.participant_one, conversation.participant_two),
-        )
-        if request.user not in (counteroffer.buyer, counteroffer.seller):
-            return redirect("detalle_conversacion", pk=pk)
-    elif request.user == seller:
+    if request.user == seller:
         return redirect("detalle_conversacion", pk=pk)
-    initial_agreement = counteroffer or conversation.publication
-    form = AgreementForm(request.POST or None, initial={"price": initial_agreement.price, "currency": initial_agreement.currency})
-    if request.method == "POST":
-        if form.is_valid():
-            try:
-                with transaction.atomic():
-                    agreement = form.save(commit=False)
-                    agreement.buyer = counteroffer.buyer if counteroffer else request.user
-                    agreement.seller = seller
-                    agreement.publication = conversation.publication
-                    agreement.conversation = conversation
-                    agreement.save()
-                    Message.objects.create(
-                        conversation=conversation,
-                        sender=request.user,
-                        content=(
-                            f"Nueva oferta para {agreement.publication.title}: "
-                            f"{agreement.price} {agreement.currency.upper()}."
-                        ),
-                    )
-                    conversation.last_activity_at = timezone.now()
-                    conversation.save(update_fields=["last_activity_at"])
-            except Exception:
-                logger.exception("No se pudo guardar la oferta para la conversación %s", conversation.pk)
-                messages.error(request, "No fue posible enviar la oferta. Inténtalo de nuevo.")
-                return redirect("crear_acuerdo", pk=conversation.pk)
-            messages.success(request, "Tu oferta fue enviada correctamente. Espera la respuesta del vendedor.")
-            return redirect("detalle_conversacion", pk=conversation.pk)
-        messages.error(request, "Revisa el precio de la oferta antes de enviarla.")
-    return render(request, "accounts/acuerdo.html", {"form": form, "conversation": conversation, "counteroffer": counteroffer})
+    form = AgreementForm(request.POST or None, initial={"price": conversation.publication.price, "currency": conversation.publication.currency})
+    if request.method == "POST" and form.is_valid():
+        agreement = form.save(commit=False)
+        agreement.buyer = request.user
+        agreement.seller = seller
+        agreement.publication = conversation.publication
+        agreement.conversation = conversation
+        agreement.save()
+        return redirect("detalle_acuerdo", pk=agreement.pk)
+    return render(request, "accounts/acuerdo.html", {"form": form, "conversation": conversation})
 
 
 @login_required
@@ -439,8 +543,8 @@ def cambiar_estado_acuerdo(request, pk, status):
         return redirect("conversaciones")
     if status == "aceptado" and request.user != agreement.seller:
         return redirect("detalle_acuerdo", pk=pk)
-    if status == "rechazado" and request.user != agreement.seller:
-        return redirect("detalle_acuerdo", pk=pk)
+    if status in {"rechazado", "cancelado"}:
+        pass
     try:
         agreement.transition_to(status)
     except ValueError:
@@ -472,19 +576,17 @@ def iniciar_checkout(request, pk):
     if request.user != agreement.buyer or agreement.status != "aceptado":
         return redirect("detalle_acuerdo", pk=pk)
     if not settings.STRIPE_SECRET_KEY or agreement.seller.stripe_account_status != "configurada" or not agreement.seller.stripe_account_id:
-        logger.warning(f"Intento de checkout sin configuración Stripe. Acuerdo: {pk}, Usuario: {request.user.username}")
         messages.error(request, "El proveedor aún no tiene configurado el cobro dentro de LUX.")
         return redirect("detalle_acuerdo", pk=pk)
     try:
         import stripe
     except ImportError:
-        logger.error("Dependencia Stripe no instalada.")
         messages.error(request, "La dependencia Stripe no está instalada.")
         return redirect("detalle_acuerdo", pk=pk)
     try:
         stripe.api_key = settings.STRIPE_SECRET_KEY
         fee = calculate_platform_fee(agreement.price)
-        transaction, created = Transaction.objects.get_or_create(
+        transaction, _ = Transaction.objects.get_or_create(
             agreement=agreement,
             defaults={"buyer": agreement.buyer, "seller": agreement.seller, "publication": agreement.publication,
                       "original_price": agreement.price, "lux_fee": fee, "seller_amount": calculate_seller_amount(agreement.price), "currency": agreement.currency},
@@ -492,7 +594,6 @@ def iniciar_checkout(request, pk):
         if transaction.status == "pendiente":
             transaction.transition_to("pago_iniciado")
             transaction.save(update_fields=["status", "updated_at"])
-            logger.info(f"Transacción creada/actualizada. Acuerdo: {pk}, Transaction ID: {transaction.pk}")
         session = stripe.checkout.Session.create(
             mode="payment",
             line_items=[{"price_data": {"currency": agreement.currency, "product_data": {"name": agreement.publication.title}, "unit_amount": int(agreement.price * Decimal("100"))}, "quantity": 1}],
@@ -503,10 +604,8 @@ def iniciar_checkout(request, pk):
         )
         transaction.external_payment_id = session.id
         transaction.save(update_fields=["external_payment_id", "updated_at"])
-        logger.info(f"Sesión de checkout creada. Session ID: {session.id}, Transaction ID: {transaction.pk}")
         return redirect(session.url)
-    except stripe.error.StripeError as e:
-        logger.error(f"Error al iniciar checkout. Acuerdo: {pk}, Error: {str(e)}")
+    except stripe.error.StripeError:
         messages.error(request, "No fue posible iniciar el pago TEST.")
         return redirect("detalle_acuerdo", pk=pk)
 
@@ -515,37 +614,23 @@ def iniciar_checkout(request, pk):
 @require_POST
 def stripe_webhook(request):
     if not settings.STRIPE_WEBHOOK_SECRET:
-        logger.error("Webhook de Stripe recibido pero STRIPE_WEBHOOK_SECRET no está configurado.")
         return JsonResponse({"error": "webhook no configurado"}, status=503)
     try:
         import stripe
         event = stripe.Webhook.construct_event(request.body, request.META.get("HTTP_STRIPE_SIGNATURE", ""), settings.STRIPE_WEBHOOK_SECRET)
     except ImportError:
-        logger.error("Dependencia Stripe no instalada en webhook.")
         return JsonResponse({"error": "stripe no instalado"}, status=503)
-    except (ValueError, stripe.error.SignatureVerificationError) as e:
-        logger.warning(f"Firma de webhook inválida: {str(e)}")
+    except (ValueError, stripe.error.SignatureVerificationError):
         return JsonResponse({"error": "firma inválida"}, status=400)
-    
-    logger.info(f"Evento Stripe recibido: {event['type']}")
-    
     if event["type"] == "checkout.session.completed":
         transaction_id = event["data"]["object"].get("metadata", {}).get("transaction_id")
-        logger.info(f"Sesión de checkout completada. Transaction ID: {transaction_id}")
         transaction = Transaction.objects.filter(pk=transaction_id).select_related("agreement").first()
         if transaction and transaction.status == "pago_iniciado":
-            logger.info(f"Actualizando transacción {transaction_id} a estado 'pagado'.")
             transaction.transition_to("pagado")
             transaction.save(update_fields=["status", "updated_at"])
             if transaction.agreement.status == "aceptado":
                 transaction.agreement.transition_to("pagado")
                 transaction.agreement.save(update_fields=["status", "updated_at"])
-                logger.info(f"Acuerdo {transaction.agreement_id} actualizado a estado 'pagado'.")
-        elif not transaction:
-            logger.error(f"Transacción no encontrada con ID: {transaction_id}")
-        else:
-            logger.warning(f"Transacción {transaction_id} tiene estado inesperado: {transaction.status}")
-    
     return JsonResponse({"received": True})
 
 

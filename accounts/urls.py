@@ -38,11 +38,6 @@ urlpatterns = [
         views.contactar_publicacion,
         name="contactar_publicacion",
     ),
-    path(
-        "publicacion/<int:pk>/oferta/",
-        views.proponer_oferta,
-        name="proponer_oferta",
-    ),
     path("publicacion/<int:pk>/editar/", views.editar_publicacion, name="editar_publicacion"),
     path("publicacion/<int:pk>/eliminar/", views.eliminar_publicacion, name="eliminar_publicacion"),
 
@@ -74,7 +69,6 @@ urlpatterns = [
     path("mensajes/", views.conversaciones, name="conversaciones"),
     path("mensajes/<int:pk>/", views.detalle_conversacion, name="detalle_conversacion"),
     path("mensajes/<int:pk>/acuerdo/", views.crear_acuerdo, name="crear_acuerdo"),
-    path("transacciones/", views.transacciones, name="transacciones"),
     path("acuerdos/<int:pk>/", views.detalle_acuerdo, name="detalle_acuerdo"),
     path("acuerdos/<int:pk>/<str:status>/", views.cambiar_estado_acuerdo, name="cambiar_estado_acuerdo"),
     path("acuerdos/<int:pk>/completar/", views.completar_acuerdo, name="completar_acuerdo"),

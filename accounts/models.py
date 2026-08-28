@@ -1,6 +1,4 @@
-from decimal import Decimal
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
@@ -77,8 +75,7 @@ class Publication(models.Model):
         max_digits=10,
         decimal_places=2,
         null=True,
-        blank=True,
-        validators=[MinValueValidator(Decimal("0.01"))]
+        blank=True
     )
 
     currency = models.CharField(max_length=3, default="mxn")
@@ -172,7 +169,7 @@ class Agreement(models.Model):
     seller = models.ForeignKey(User, on_delete=models.PROTECT, related_name="agreements_as_seller")
     publication = models.ForeignKey(Publication, on_delete=models.PROTECT, related_name="agreements")
     conversation = models.ForeignKey(Conversation, on_delete=models.SET_NULL, null=True, blank=True, related_name="agreements")
-    price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=3, default="mxn")
     status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="propuesta")
     created_at = models.DateTimeField(auto_now_add=True)
@@ -201,10 +198,10 @@ class Transaction(models.Model):
     buyer = models.ForeignKey(User, on_delete=models.PROTECT, related_name="purchases")
     seller = models.ForeignKey(User, on_delete=models.PROTECT, related_name="sales")
     publication = models.ForeignKey(Publication, on_delete=models.PROTECT, related_name="transactions")
-    original_price = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
-    lux_fee = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
-    seller_amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0"))])
-    processing_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(Decimal("0"))])
+    original_price = models.DecimalField(max_digits=10, decimal_places=2)
+    lux_fee = models.DecimalField(max_digits=10, decimal_places=2)
+    seller_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    processing_cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     currency = models.CharField(max_length=3, default="mxn")
     status = models.CharField(max_length=16, choices=STATUS_CHOICES, default="pendiente")
     external_payment_id = models.CharField(max_length=200, blank=True)
@@ -229,7 +226,7 @@ class Review(models.Model):
     transaction = models.ForeignKey(Transaction, on_delete=models.PROTECT, related_name="reviews")
     author = models.ForeignKey(User, on_delete=models.PROTECT, related_name="reviews_written")
     subject = models.ForeignKey(User, on_delete=models.PROTECT, related_name="reviews_received")
-    rating = models.PositiveSmallIntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    rating = models.PositiveSmallIntegerField()
     content = models.TextField(max_length=1000, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

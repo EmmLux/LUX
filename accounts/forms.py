@@ -83,28 +83,6 @@ class PublicationForm(forms.ModelForm):
             "currency": forms.Select(choices=(("mxn", "MXN"), ("usd", "USD"))),
         }
 
-    def clean_title(self):
-        title = self.cleaned_data["title"].strip()
-        if not title:
-            raise forms.ValidationError("El título no puede estar vacío.")
-        if len(title) < 5:
-            raise forms.ValidationError("El título debe tener al menos 5 caracteres.")
-        return title
-
-    def clean_description(self):
-        description = self.cleaned_data["description"].strip()
-        if not description:
-            raise forms.ValidationError("La descripción no puede estar vacía.")
-        if len(description) < 20:
-            raise forms.ValidationError("La descripción debe tener al menos 20 caracteres.")
-        return description
-
-    def clean_price(self):
-        price = self.cleaned_data.get("price")
-        if price is not None and price <= 0:
-            raise forms.ValidationError("El precio debe ser mayor que cero.")
-        return price
-
 
 class MessageForm(forms.ModelForm):
     class Meta:
@@ -120,7 +98,6 @@ class MessageForm(forms.ModelForm):
         content = self.cleaned_data["content"].strip()
         if not content:
             raise forms.ValidationError("Escribe un mensaje antes de enviarlo.")
-        return content
         return content
 
 

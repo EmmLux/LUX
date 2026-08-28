@@ -13,18 +13,12 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 import os
 from pathlib import Path
 
-try:
-    from dotenv import load_dotenv
-except ModuleNotFoundError:  # pragma: no cover - optional in production
-    load_dotenv = None
-
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-if load_dotenv is not None:
-    load_dotenv(BASE_DIR / ".env", override=False)
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -97,18 +91,19 @@ WSGI_APPLICATION = 'lux.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-if os.environ.get("DATABASE_URL"):
-    DATABASES = {
-        "default": dj_database_url.config(
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
-else:
+DATABASES = {
+    "default": dj_database_url.config(
+        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
+}
+
+if not os.environ.get("DATABASE_URL"):
     DATABASES = {
         "default": {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
 
@@ -187,18 +182,6 @@ STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 if not DEBUG:
-    for key_name, value, expected_prefix in (
-        ("STRIPE_PUBLIC_KEY", STRIPE_PUBLIC_KEY, "pk_test_"),
-        ("STRIPE_SECRET_KEY", STRIPE_SECRET_KEY, "sk_test_"),
-        ("STRIPE_WEBHOOK_SECRET", STRIPE_WEBHOOK_SECRET, "whsec_"),
-    ):
-        if value and not value.startswith(expected_prefix):
-            raise RuntimeError(
-                f"{key_name} debe usar una clave de Stripe TEST válida en producción. "
-                "Revisa la variable de entorno y no la hardcodees en código."
-            )
-
-if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
@@ -211,59 +194,3 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = False  # Django necesita que los formularios puedan enviar el token CSRF.
 SECURE_REFERRER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
-
-# Logging configuration
-# https://docs.djangoproject.com/en/6.1/topics/logging/
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {asctime} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-        },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOGS_DIR / "lux.log",
-            "maxBytes": 1024 * 1024 * 10,  # 10 MB
-            "backupCount": 5,
-            "formatter": "verbose",
-        },
-        "stripe_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": LOGS_DIR / "stripe.log",
-            "maxBytes": 1024 * 1024 * 10,  # 10 MB
-            "backupCount": 5,
-            "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "accounts": {
-            "handlers": ["console", "file"],
-            "level": "INFO" if not DEBUG else "DEBUG",
-            "propagate": False,
-        },
-        "stripe": {
-            "handlers": ["console", "stripe_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django": {
-            "handlers": ["console", "file"],
-            "level": "WARNING",
-        },
-    },
-}

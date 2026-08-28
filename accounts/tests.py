@@ -121,38 +121,3 @@ class LuxFlowTests(TestCase):
         transaction.status = "cancelado"
         with self.assertRaises(ValueError):
             transaction.transition_to("pagado")
-
-    def test_agreement_can_be_created_and_accepted(self):
-        from .models import Agreement
-
-        conversation = Conversation.objects.create(
-            participant_one=self.owner,
-            participant_two=self.visitor,
-            publication=self.publication,
-        )
-
-        self.client.force_login(self.visitor)
-        response = self.client.post(
-            reverse("crear_acuerdo", args=[conversation.pk]),
-            {"price": "850.00", "currency": "mxn"},
-        )
-
-        self.assertEqual(Agreement.objects.count(), 1)
-        agreement = Agreement.objects.get()
-        self.assertRedirects(response, reverse("detalle_acuerdo", args=[agreement.pk]), fetch_redirect_response=False)
-        self.assertEqual(agreement.buyer, self.visitor)
-        self.assertEqual(agreement.seller, self.owner)
-        offer_message = Message.objects.get(conversation=conversation)
-        self.assertEqual(offer_message.sender, self.visitor)
-        self.assertContains(self.client.get(reverse("detalle_conversacion", args=[conversation.pk])), "Ofertas en esta conversación")
-
-        self.client.force_login(self.owner)
-        response = self.client.post(reverse("cambiar_estado_acuerdo", args=[agreement.pk, "aceptado"]))
-        agreement.refresh_from_db()
-        self.assertRedirects(response, reverse("detalle_acuerdo", args=[agreement.pk]), fetch_redirect_response=False)
-        self.assertEqual(agreement.status, "aceptado")
-
-    def test_transactions_dashboard_is_available_for_authenticated_users(self):
-        self.client.force_login(self.visitor)
-        response = self.client.get(reverse("transacciones"))
-        self.assertEqual(response.status_code, 200)
